@@ -63,6 +63,8 @@ Older releases are at <https://github.com/sorokin-vladimir/tele/releases>.
 - A window moved while its history was still loading, such as scrolling up
   right after jumping to a message, is filled once that load ends. Before,
   the move was dropped and nothing more loaded until the next scroll.
+- A chat whose newest message was deleted while it was open, with nothing
+  unread, lost its oldest loaded message each time a new one arrived (#387).
 
 ## [2.1.3] - 2026-11-13
 
