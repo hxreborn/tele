@@ -338,7 +338,7 @@ func TestVisual_DeletedMessagesLeaveTheRestSelected(t *testing.T) {
 	assert.Equal(t, want, got)
 }
 
-func TestVisual_TheSelectionLivesThroughAWindowReload(t *testing.T) {
+func TestVisual_TheSelectionLivesThroughAWindowReloadAndLaterArrivals(t *testing.T) {
 	m, st := visualRoot(t, visualMessages(60)...)
 	require.Equal(t, 60, m.Chat().SelectedMessageID())
 	m = pressKeys(m, "m")
@@ -350,7 +350,16 @@ func TestVisual_TheSelectionLivesThroughAWindowReload(t *testing.T) {
 
 	nm, _ := applyEvent(t, m, st, store.Event{Kind: store.EventDeleteMessages, ChatID: 1, MsgIDs: []int{60}})
 	m = nm.(ui.RootModel)
-	assert.Equal(t, keys.ModeVisual, m.VimMode(), "the window reload after the delete keeps the mode")
+	require.Equal(t, keys.ModeVisual, m.VimMode(), "the window reload after the delete keeps the mode")
+
+	for id := 61; id <= 63; id++ {
+		nm, _ = applyEvent(t, m, st, store.Event{Kind: store.EventNewMessage, Message: domain.Message{
+			ID: id, ChatID: 1, SenderID: 42, SenderName: "Bob", Text: "new", Date: visualDate(id),
+		}})
+		m = nm.(ui.RootModel)
+	}
+
+	assert.Equal(t, keys.ModeVisual, m.VimMode())
 	assert.Equal(t, 11, m.Chat().SelectedMessageID())
 	var ids []int
 	for _, msg := range m.Chat().VisualSelection() {
